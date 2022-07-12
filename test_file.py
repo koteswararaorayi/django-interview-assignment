@@ -1,2 +1,2 @@
 "testing"
-"new one added"
+"new"
