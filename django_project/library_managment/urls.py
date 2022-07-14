@@ -4,5 +4,5 @@ from . import user_view
 app_name = "library_managment"
 
 urlpatterns = [
-    path('signup', user_view.SignupView.as_view()),
+    path('signup', user_view.Admin.as_view()),
 ]

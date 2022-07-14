@@ -10,6 +10,9 @@ class User(AbstractBaseUser):
     email = models.EmailField(unique=True, max_length=64)
     role = models.CharField(max_length=16)
     password = models.CharField(max_length=128)
+    is_active = models.BooleanField(default=True)
+    first_name = models.CharField(max_length=32,default="")
+    last_name = models.CharField(max_length=32,default="")
 
     objects = UserManager()
     

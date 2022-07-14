@@ -2,4 +2,8 @@ from rest_framework.permissions import BasePermission
 
 class IsLibrarian(BasePermission):
    def has_permission(self, request, view):
-      return request.user.role=="LIBRARIAN" 
+      return request.user.role=="LIBRARIAN"
+
+class IsAdmin(BasePermission):
+   def has_permission(self, request, view):
+      return request.user.role=="ADMIN"
