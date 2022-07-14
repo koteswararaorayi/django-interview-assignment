@@ -31,5 +31,3 @@ class SignupView(APIView):
             return Response({"message": "Request could not be completed"}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"message": "user successfully created"}, status=status.HTTP_201_CREATED)
-    
-    
