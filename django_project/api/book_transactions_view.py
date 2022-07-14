@@ -13,10 +13,9 @@ from rest_framework.status import (
     HTTP_200_OK
 )
 
-class TransactionsView(APIView):
+class Transaction(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
-        print(request.user.id)
         query = """
             select id, title, author, publisher, category, status from books where status!=%s
         """
