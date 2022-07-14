@@ -18,9 +18,9 @@ class TransactionsView(APIView):
     def get(self, request):
         print(request.user.id)
         query = """
-            select id, title, author, publisher, category, status from books where status=%s
+            select id, title, author, publisher, category, status from books where status!=%s
         """
-        data = ["AVAILABLE"]
+        data = ["DELETED"]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
             rows  = cursor.fetchall()
@@ -33,6 +33,10 @@ class TransactionsView(APIView):
         book_id = request.data['book_id']
         book_status = request.data['book_status']
         member = request.user
+        if book_status == "borrowed":
+            book_status = "BORROWED"
+        if book_status == "returned":
+            book_status = "AVAILABLE"
         try:
             query = """
                 INSERT INTO transactions (book_id, book_status, member)

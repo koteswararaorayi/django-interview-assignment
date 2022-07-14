@@ -20,7 +20,7 @@ class SignupView(APIView):
         role = request.data['role']
         try:
             query = """
-                INSERT INTO auth_user(username, email, password, role)
+                INSERT INTO users(username, email, password, role)
                 VALUES(%s, %s, %s, %s)
             """
             data = [username, email, password, role]
