@@ -18,9 +18,9 @@ class TransactionsView(APIView):
     def get(self, request):
         print(request.user.id)
         query = """
-            select id, title, author, publisher, category, status from books where status!=%s
+            select id, title, author, publisher, category, status from books where status=%s
         """
-        data = ["DELETED"]
+        data = ["AVAILABLE"]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
             rows  = cursor.fetchall()
@@ -30,16 +30,21 @@ class TransactionsView(APIView):
         return Response({"data": books}, status=status.HTTP_200_OK)
 
     def post(self, request):
-        title = request.data['title']
-        book_type = request.data['type']
+        book_id = request.data['book_id']
+        book_status = request.data['book_status']
         member = request.user
         try:
             query = """
-                INSERT INTO transactions (title, type, member_name)
+                INSERT INTO transactions (book_id, book_status, member)
                 VALUES(%s, %s, %s)
             """
-            data = [title, book_type, member]
+            data = [book_id, book_status, member]
             with connections['default'].cursor() as cursor:
+                cursor.execute(query,data)
+                query = """
+                    UPDATE books set status=%s where id=%s
+                """
+                data = [book_status, book_id]
                 cursor.execute(query,data)
                 cursor.close()
         except IntegrityError as e:
