@@ -14,7 +14,6 @@ from django.contrib.auth.hashers import make_password
 class Member(APIView):
     #add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated, IsLibrarian]
-
     
     def get(self, request):
         query = """
@@ -28,20 +27,6 @@ class Member(APIView):
             members  = [dict(zip(col_names, row_data)) for row_data in rows]
             cursor.close()        
         return Response({"data": members}, status=status.HTTP_200_OK)
-    
-    def get(self, request, id):
-        query = """
-            select id, first_name, last_name, username, email, role, created_by, is_active  from users where role=%s and id=%s
-        """
-        data = ["MEMBER", id]
-        with connections['default'].cursor() as cursor:
-            cursor.execute(query,data)
-            rows  = cursor.fetchall()
-            col_names   = [names[0] for names in cursor.description]
-            members  = [dict(zip(col_names, row_data)) for row_data in rows]
-            cursor.close()
-        return Response({"data": members}, status=status.HTTP_200_OK)
-
 
     def post(self, request ):
         username = request.data['username']
@@ -66,7 +51,25 @@ class Member(APIView):
 
         return Response({"message": "member successfully created"}, status=status.HTTP_201_CREATED)
 
-    def put(self, request, id):
+class MemberDetails(APIView):
+    #add permission to check if user is authenticated
+    permission_classes = [permissions.IsAuthenticated, IsLibrarian]
+
+    def get(self, request, user_id):
+        query = """
+            select id, first_name, last_name, username, email, role, created_by, is_active  from users where role=%s and id=%s
+        """
+        data = ["MEMBER", user_id]
+        with connections['default'].cursor() as cursor:
+            cursor.execute(query,data)
+            rows  = cursor.fetchall()
+            col_names   = [names[0] for names in cursor.description]
+            members  = [dict(zip(col_names, row_data)) for row_data in rows]
+            cursor.close()
+        return Response({"data": members}, status=status.HTTP_200_OK)
+
+
+    def put(self, request, user_id):
         first_name = request.data['first_name']
         last_name = request.data['last_name']
         updated_by = request.user
@@ -74,7 +77,7 @@ class Member(APIView):
             query = """
                 UPDATE users set first_name=%s, last_name=%s, updated_by=%s where id=%s
             """
-            data = [first_name, last_name, updated_by, id]
+            data = [first_name, last_name, updated_by, user_id]
             with connections['default'].cursor() as cursor:
                 cursor.execute(query,data)
                 cursor.close()
@@ -83,12 +86,12 @@ class Member(APIView):
 
         return Response({"message": "member successfully updated"}, status=status.HTTP_200_OK)
     
-    def delete(self, request, id):
+    def delete(self, request, user_id):
         updated_by = request.user
         query = """
            UPDATE users set is_active=0, updated_by=%s where id=%s
         """
-        data = [updated_by, id]
+        data = [updated_by, user_id]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
             cursor.close()        
