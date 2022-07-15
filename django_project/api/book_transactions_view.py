@@ -17,9 +17,9 @@ class Transaction(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         query = """
-            select id, title, author, publisher, category, status from books where status!=%s
+            select id, title, author, publisher, category, status from books where status=%s
         """
-        data = ["DELETED"]
+        data = ["AVAILABLE"]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
             rows  = cursor.fetchall()
