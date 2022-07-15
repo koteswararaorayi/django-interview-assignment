@@ -14,7 +14,6 @@ from django.contrib.auth.hashers import make_password
 class Member(APIView):
     #add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated, IsLibrarian]
-    
     def get(self, request):
         query = """
             select id, first_name, last_name, username, email, role, created_by  from users where role=%s and is_active=%s
@@ -25,7 +24,7 @@ class Member(APIView):
             rows  = cursor.fetchall()
             col_names   = [names[0] for names in cursor.description]
             members  = [dict(zip(col_names, row_data)) for row_data in rows]
-            cursor.close()        
+            cursor.close()
         return Response({"data": members}, status=status.HTTP_200_OK)
 
     def post(self, request ):
@@ -47,26 +46,28 @@ class Member(APIView):
                 cursor.execute(query,data)
                 cursor.close()
         except IntegrityError as e:
-            return Response({"message": "Request could not be completed"}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"message": "member successfully created"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Username/Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Member successfully created"}, status=status.HTTP_201_CREATED)
 
 class MemberDetails(APIView):
     #add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated, IsLibrarian]
-
     def get(self, request, user_id):
         query = """
-            select id, first_name, last_name, username, email, role, created_by, is_active  from users where role=%s and id=%s
+            select id, first_name, last_name, username, email, role, created_by, is_active  from users where role=%s and id=%s and is_active=%s
         """
-        data = ["MEMBER", user_id]
+        data = ["MEMBER", user_id, 1]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
             rows  = cursor.fetchall()
             col_names   = [names[0] for names in cursor.description]
-            members  = [dict(zip(col_names, row_data)) for row_data in rows]
+            member  = [dict(zip(col_names, row_data)) for row_data in rows]
             cursor.close()
-        return Response({"data": members}, status=status.HTTP_200_OK)
+        if member:
+            return Response({"data": member}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "The requried Member is removed"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "The requried Member is not available"}, status=status.HTTP_400_BAD_REQUEST)
 
 
     def put(self, request, user_id):
@@ -83,8 +84,7 @@ class MemberDetails(APIView):
                 cursor.close()
         except IntegrityError as e:
             return Response({"message": "Request could not be completed"}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"message": "member successfully updated"}, status=status.HTTP_200_OK)
+        return Response({"message": "Member successfully updated"}, status=status.HTTP_200_OK)
     
     def delete(self, request, user_id):
         updated_by = request.user
@@ -94,8 +94,8 @@ class MemberDetails(APIView):
         data = [updated_by, user_id]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
-            cursor.close()        
-        return Response({"message": "member successfully deleted"}, status=status.HTTP_200_OK)
+            cursor.close()
+        return Response({"message": "Member successfully deleted"}, status=status.HTTP_200_OK)
 
 class Remove(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -107,8 +107,8 @@ class Remove(APIView):
         data = [updated_by, user_id]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
-            cursor.close()        
-        return Response({"message": "member successfully deleted"}, status=status.HTTP_200_OK)
+            cursor.close()
+        return Response({"message": "Member successfully deleted"}, status=status.HTTP_200_OK)
 
 class Librarian(APIView):
     #add permission to check if user is authenticated
@@ -132,6 +132,5 @@ class Librarian(APIView):
                 cursor.execute(query,data)
                 cursor.close()
         except IntegrityError as e:
-            return Response({"message": "Request could not be completed"}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"message": "librarian successfully created"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Username/Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Librarian successfully created"}, status=status.HTTP_201_CREATED)

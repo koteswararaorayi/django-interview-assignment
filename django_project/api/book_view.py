@@ -16,7 +16,6 @@ from rest_framework.status import (
 class Book(APIView):
     #add permission to check if user is authenticated
     permission_classes = [permissions.IsAuthenticated, IsLibrarian]
-
     def post(self, request):
         title = request.data['title']
         author = request.data['author']
@@ -68,24 +67,25 @@ class BookDetails(APIView):
                 cursor.close()
         except IntegrityError as e:
             return Response({"message": "Book title name already exists"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"message": "book successfully updated"}, status=status.HTTP_200_OK)           
+        return Response({"message": "book successfully updated"}, status=status.HTTP_200_OK)
 
     
     def get(self, request, book_id):
-        try:
-            query = """
-                select id, title, author, publisher, category from books where id=%s
-            """
-            data = [book_id]
-            with connections['default'].cursor() as cursor:
-                cursor.execute(query,data)
-                rows  = cursor.fetchall()
-                col_names   = [names[0] for names in cursor.description]
-                books  = [dict(zip(col_names, row_data)) for row_data in rows]
-                cursor.close()
-        except IntegrityError :
+        query = """
+            select id, title, author, publisher, category from books where id=%s and status=%s
+        """
+        data = [book_id, "AVAILABLE"]
+        with connections['default'].cursor() as cursor:
+            cursor.execute(query,data)
+            rows  = cursor.fetchall()
+            col_names   = [names[0] for names in cursor.description]
+            books  = [dict(zip(col_names, row_data)) for row_data in rows]
+            cursor.close()
+        if books:
+            return Response({"data": books}, status=status.HTTP_200_OK)
+        else:
             return Response({"message": "The requried book is not available"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response({"data": books}, status=status.HTTP_200_OK)
+        return Response({"message": "The requried book is not available"}, status=status.HTTP_400_BAD_REQUEST)
 
     
     def delete(self, request, book_id):
@@ -96,5 +96,5 @@ class BookDetails(APIView):
         data = [updated_by, book_id]
         with connections['default'].cursor() as cursor:
             cursor.execute(query,data)
-            cursor.close()        
+            cursor.close()
         return Response({"message": "book successfully deleted"}, status=status.HTTP_200_OK)
