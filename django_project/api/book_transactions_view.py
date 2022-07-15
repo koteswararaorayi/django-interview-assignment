@@ -25,7 +25,7 @@ class Transaction(APIView):
             rows  = cursor.fetchall()
             col_names   = [names[0] for names in cursor.description]
             books  = [dict(zip(col_names, row_data)) for row_data in rows]
-            cursor.close()        
+            cursor.close()
         return Response({"data": books}, status=status.HTTP_200_OK)
 
     def post(self, request):
