@@ -1,4 +1,4 @@
-s = 'f09r27i8e67'
+s = '3gy41d216'
 for i in range(len(s)-1):
     if s[i].isdigit():
         x=int(s[i])
